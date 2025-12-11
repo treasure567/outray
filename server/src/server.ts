@@ -8,6 +8,8 @@ const router = new TunnelRouter();
 const httpServer = createServer();
 const proxy = new HTTPProxy(router, config.baseDomain);
 
+console.log("🚨 BASE DOMAIN LOADED:", config.baseDomain);
+
 new WSHandler(httpServer, router);
 
 httpServer.on("request", (req, res) => {
