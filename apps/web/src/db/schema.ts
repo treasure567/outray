@@ -8,6 +8,14 @@ import {
   usersRelations,
 } from "./auth-schema";
 
+import {
+  tunnels,
+  apiKeys,
+  tunnelsRelations,
+  apiKeysRelations,
+  usersAppRelations,
+} from "./app-schema";
+
 export {
   accounts,
   sessions,
@@ -16,4 +24,9 @@ export {
   accountsRelations,
   sessionsRelations,
   usersRelations,
+  tunnels,
+  apiKeys,
+  tunnelsRelations,
+  apiKeysRelations,
+  usersAppRelations,
 };
