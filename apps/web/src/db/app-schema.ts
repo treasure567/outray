@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { pgTable, text, timestamp, index } from "drizzle-orm/pg-core";
-import { users } from "./auth-schema";
+import { users, organizations } from "./auth-schema";
 
 export const tunnels = pgTable(
   "tunnels",
@@ -11,27 +11,39 @@ export const tunnels = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .$onUpdate(() => new Date())
       .notNull(),
   },
-  (table) => [index("tunnels_userId_idx").on(table.userId)],
+  (table) => [
+    index("tunnels_userId_idx").on(table.userId),
+    index("tunnels_organizationId_idx").on(table.organizationId),
+  ],
 );
 
-export const apiKeys = pgTable(
-  "api_keys",
+export const authTokens = pgTable(
+  "auth_tokens",
   {
     id: text("id").primaryKey(),
-    key: text("key").notNull().unique(),
+    token: text("token").notNull().unique(),
     name: text("name").notNull(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     lastUsedAt: timestamp("last_used_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [index("api_keys_userId_idx").on(table.userId)],
+  (table) => [
+    index("auth_tokens_organizationId_idx").on(table.organizationId),
+    index("auth_tokens_userId_idx").on(table.userId),
+  ],
 );
 
 export const tunnelsRelations = relations(tunnels, ({ one }) => ({
@@ -39,16 +51,29 @@ export const tunnelsRelations = relations(tunnels, ({ one }) => ({
     fields: [tunnels.userId],
     references: [users.id],
   }),
+  organization: one(organizations, {
+    fields: [tunnels.organizationId],
+    references: [organizations.id],
+  }),
 }));
 
-export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
+export const authTokensRelations = relations(authTokens, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [authTokens.organizationId],
+    references: [organizations.id],
+  }),
   user: one(users, {
-    fields: [apiKeys.userId],
+    fields: [authTokens.userId],
     references: [users.id],
   }),
 }));
 
 export const usersAppRelations = relations(users, ({ many }) => ({
   tunnels: many(tunnels),
-  apiKeys: many(apiKeys),
+  authTokens: many(authTokens),
+}));
+
+export const organizationsAppRelations = relations(organizations, ({ many }) => ({
+  tunnels: many(tunnels),
+  authTokens: many(authTokens),
 }));
