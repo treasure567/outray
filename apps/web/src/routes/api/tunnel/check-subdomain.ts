@@ -10,7 +10,7 @@ export const Route = createFileRoute("/api/tunnel/check-subdomain")({
       POST: async ({ request }) => {
         try {
           const body = await request.json();
-          const { subdomain, userId } = body;
+          const { subdomain, organizationId } = body;
 
           if (!subdomain) {
             return json(
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/api/tunnel/check-subdomain")({
           });
 
           if (existingTunnel) {
-            if (userId && existingTunnel.userId === userId) {
+            if (organizationId && existingTunnel.organizationId === organizationId) {
               return json({ allowed: true, type: "owned" });
             }
             return json({ allowed: false, error: "Subdomain already taken" });
