@@ -10,8 +10,10 @@ import {
 
 import {
   tunnels,
+  subdomains,
   authTokens,
   tunnelsRelations,
+  subdomainsRelations,
   authTokensRelations,
   usersAppRelations,
   organizationsAppRelations,
@@ -26,8 +28,10 @@ export {
   members,
   invitations,
   tunnels,
+  subdomains,
   authTokens,
   tunnelsRelations,
+  subdomainsRelations,
   authTokensRelations,
   usersAppRelations,
   organizationsAppRelations,
