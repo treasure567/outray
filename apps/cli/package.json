@@ -1,10 +1,10 @@
 {
   "name": "@outray/cli",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "OutRay CLI - Expose your local server to the internet",
   "main": "dist/index.js",
   "bin": {
-    "outray": "./dist/index.js"
+    "outray": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
