@@ -15,6 +15,7 @@ import { Route as DashRouteImport } from './routes/dash'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashIndexRouteImport } from './routes/dash/index'
 import { Route as DashSettingsRouteImport } from './routes/dash/settings'
+import { Route as DashRequestsRouteImport } from './routes/dash/requests'
 import { Route as DashInstallRouteImport } from './routes/dash/install'
 import { Route as ApiAuthTokensRouteImport } from './routes/api/auth-tokens'
 import { Route as DashTunnelsIndexRouteImport } from './routes/dash/tunnels/index'
@@ -54,6 +55,11 @@ const DashIndexRoute = DashIndexRouteImport.update({
 const DashSettingsRoute = DashSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => DashRoute,
+} as any)
+const DashRequestsRoute = DashRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
   getParentRoute: () => DashRoute,
 } as any)
 const DashInstallRoute = DashInstallRouteImport.update({
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/api/auth-tokens': typeof ApiAuthTokensRoute
   '/dash/install': typeof DashInstallRoute
+  '/dash/requests': typeof DashRequestsRoute
   '/dash/settings': typeof DashSettingsRoute
   '/dash/': typeof DashIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/api/auth-tokens': typeof ApiAuthTokensRoute
   '/dash/install': typeof DashInstallRoute
+  '/dash/requests': typeof DashRequestsRoute
   '/dash/settings': typeof DashSettingsRoute
   '/dash': typeof DashIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/api/auth-tokens': typeof ApiAuthTokensRoute
   '/dash/install': typeof DashInstallRoute
+  '/dash/requests': typeof DashRequestsRoute
   '/dash/settings': typeof DashSettingsRoute
   '/dash/': typeof DashIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/api/auth-tokens'
     | '/dash/install'
+    | '/dash/requests'
     | '/dash/settings'
     | '/dash/'
     | '/api/auth/$'
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/api/auth-tokens'
     | '/dash/install'
+    | '/dash/requests'
     | '/dash/settings'
     | '/dash'
     | '/api/auth/$'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/api/auth-tokens'
     | '/dash/install'
+    | '/dash/requests'
     | '/dash/settings'
     | '/dash/'
     | '/api/auth/$'
@@ -273,6 +285,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/dash/settings'
       preLoaderRoute: typeof DashSettingsRouteImport
+      parentRoute: typeof DashRoute
+    }
+    '/dash/requests': {
+      id: '/dash/requests'
+      path: '/requests'
+      fullPath: '/dash/requests'
+      preLoaderRoute: typeof DashRequestsRouteImport
       parentRoute: typeof DashRoute
     }
     '/dash/install': {
@@ -350,6 +369,7 @@ declare module '@tanstack/react-router' {
 
 interface DashRouteChildren {
   DashInstallRoute: typeof DashInstallRoute
+  DashRequestsRoute: typeof DashRequestsRoute
   DashSettingsRoute: typeof DashSettingsRoute
   DashIndexRoute: typeof DashIndexRoute
   DashTunnelsTunnelIdRoute: typeof DashTunnelsTunnelIdRoute
@@ -358,6 +378,7 @@ interface DashRouteChildren {
 
 const DashRouteChildren: DashRouteChildren = {
   DashInstallRoute: DashInstallRoute,
+  DashRequestsRoute: DashRequestsRoute,
   DashSettingsRoute: DashSettingsRoute,
   DashIndexRoute: DashIndexRoute,
   DashTunnelsTunnelIdRoute: DashTunnelsTunnelIdRoute,
