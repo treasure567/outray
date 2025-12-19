@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Globe, Plus, Trash2, Loader2 } from "lucide-react";
+import { Globe, Plus, Trash2, X } from "lucide-react";
 import { appClient } from "../../lib/app-client";
 import { authClient } from "../../lib/auth-client";
 
@@ -10,7 +10,8 @@ export const Route = createFileRoute("/dash/subdomains")({
 });
 
 function SubdomainsView() {
-  const { data: activeOrg } = authClient.useActiveOrganization();
+  const { data: activeOrg, isPending: orgLoading } =
+    authClient.useActiveOrganization();
   const queryClient = useQueryClient();
   const [newSubdomain, setNewSubdomain] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -64,6 +65,38 @@ function SubdomainsView() {
 
   const subdomains = data && "subdomains" in data ? data.subdomains : [];
 
+  if (isLoading || orgLoading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-8 w-48 bg-white/5 rounded mb-2" />
+            <div className="h-4 w-64 bg-white/5 rounded" />
+          </div>
+          <div className="h-10 w-40 bg-white/5 rounded-lg" />
+        </div>
+
+        <div className="grid gap-4">
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between bg-white/2 border border-white/5 rounded-2xl p-6"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-white/5" />
+                <div>
+                  <div className="h-4 w-48 bg-white/5 rounded mb-2" />
+                  <div className="h-3 w-32 bg-white/5 rounded" />
+                </div>
+              </div>
+              <div className="h-8 w-8 bg-white/5 rounded-lg" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -75,7 +108,7 @@ function SubdomainsView() {
         </div>
         <button
           onClick={() => setIsCreating(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-200 text-black rounded-full transition-colors font-medium"
         >
           <Plus size={16} />
           Reserve Subdomain
@@ -83,57 +116,72 @@ function SubdomainsView() {
       </div>
 
       {isCreating && (
-        <div className="bg-black border border-white/10 rounded-lg p-4">
-          <form onSubmit={handleCreate} className="flex gap-4 items-end">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                Subdomain
-              </label>
-              <div className="flex items-center">
-                <input
-                  type="text"
-                  value={newSubdomain}
-                  onChange={(e) => setNewSubdomain(e.target.value)}
-                  placeholder="my-app"
-                  className="flex-1 bg-black border border-white/10 rounded-l-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-                  autoFocus
-                />
-                <div className="bg-white/5 border border-l-0 border-white/10 rounded-r-lg px-4 py-2 text-gray-400">
-                  .outray.dev
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-white">
+                Reserve Subdomain
+              </h2>
               <button
-                type="button"
                 onClick={() => {
                   setIsCreating(false);
                   setError(null);
                   setNewSubdomain("");
                 }}
-                className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+                className="text-gray-500 hover:text-white transition-colors"
               >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={createMutation.isPending}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors disabled:opacity-50"
-              >
-                {createMutation.isPending ? "Reserving..." : "Reserve"}
+                <X size={20} />
               </button>
             </div>
-          </form>
-          {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
+
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1.5">
+                  Subdomain
+                </label>
+                <div className="flex items-center">
+                  <input
+                    type="text"
+                    value={newSubdomain}
+                    onChange={(e) => setNewSubdomain(e.target.value)}
+                    placeholder="my-app"
+                    className="flex-1 bg-white/5 border border-white/10 rounded-l-xl px-4 py-2.5 text-white focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-all"
+                    autoFocus
+                  />
+                  <div className="bg-white/5 border border-l-0 border-white/10 rounded-r-xl px-4 py-2.5 text-gray-400">
+                    .outray.app
+                  </div>
+                </div>
+                {error && <p className="text-red-400 mt-2 text-sm">{error}</p>}
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCreating(false);
+                    setError(null);
+                    setNewSubdomain("");
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={createMutation.isPending}
+                  className="flex-1 px-4 py-2.5 bg-white hover:bg-gray-200 text-black rounded-xl transition-colors disabled:opacity-50 font-medium"
+                >
+                  {createMutation.isPending ? "Reserving..." : "Reserve"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
-      {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="animate-spin text-gray-500" size={24} />
-        </div>
-      ) : subdomains.length === 0 ? (
-        <div className="text-center py-12 text-gray-500 bg-white/5 rounded-lg border border-white/5">
+      {subdomains.length === 0 ? (
+        <div className="text-center py-12 text-gray-500 bg-white/2 rounded-2xl border border-white/5">
           No subdomains reserved yet.
         </div>
       ) : (
@@ -141,7 +189,7 @@ function SubdomainsView() {
           {subdomains.map((sub) => (
             <div
               key={sub.id}
-              className="flex items-center justify-between bg-black border border-white/5 rounded-lg p-4 hover:border-white/10 transition-all"
+              className="flex items-center justify-between bg-white/2 border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all"
             >
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20">
@@ -150,9 +198,9 @@ function SubdomainsView() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-medium text-white">
-                      {sub.subdomain}.outray.dev
+                      {sub.subdomain}.outray.app
                     </h3>
-                    <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 text-xs border border-blue-500/20">
+                    <span className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 text-xs border border-green-500/20">
                       Reserved
                     </span>
                   </div>
