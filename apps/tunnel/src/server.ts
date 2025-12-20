@@ -1,7 +1,6 @@
 import { createServer } from "http";
 import Redis from "ioredis";
 import { WebSocketServer } from "ws";
-import { parse } from "url";
 import { TunnelRouter } from "./core/TunnelRouter";
 import { WSHandler } from "./core/WSHandler";
 import { HTTPProxy } from "./core/HTTPProxy";
@@ -45,8 +44,8 @@ const wssDashboard = new WebSocketServer({ noServer: true });
 new WSHandler(wssTunnel, router);
 
 wssDashboard.on("connection", (ws, req) => {
-  const { query } = parse(req.url || "", true);
-  const orgId = query.orgId as string;
+  const url = new URL(req.url || "", "http://localhost");
+  const orgId = url.searchParams.get("orgId");
 
   if (!orgId) {
     ws.close(1008, "Organization ID required");
@@ -57,7 +56,7 @@ wssDashboard.on("connection", (ws, req) => {
 });
 
 httpServer.on("upgrade", (request, socket, head) => {
-  const { pathname } = parse(request.url || "");
+  const { pathname } = new URL(request.url || "", "http://localhost");
 
   if (pathname === "/dashboard/events") {
     wssDashboard.handleUpgrade(request, socket, head, (ws) => {
