@@ -41,10 +41,8 @@ function RequestsView() {
   const activeOrgId = selectedOrganizationId;
   const wsRef = useRef<WebSocket | null>(null);
 
-  // Calculate the position of the sliding indicator
   const activeIndex = TIME_RANGES.findIndex((r) => r.value === timeRange);
 
-  // Fetch historical requests from API
   const fetchHistoricalRequests = async (range: TimeRange) => {
     if (!activeOrgId || range === "live") return;
 
@@ -64,7 +62,6 @@ function RequestsView() {
     }
   };
 
-  // Handle time range change
   useEffect(() => {
     if (timeRange === "live") {
       // Clear historical data when switching to live
@@ -164,9 +161,7 @@ function RequestsView() {
           />
         </div>
 
-        {/* Time Range Selector with Sliding Background */}
         <div className="relative grid grid-cols-5 items-center bg-white/5 border border-white/10 rounded-xl p-1">
-          {/* Sliding background indicator */}
           <div
             className="absolute top-1 bottom-1 left-1 bg-accent rounded-lg transition-all duration-300 ease-out shadow-sm"
             style={{
