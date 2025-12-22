@@ -66,6 +66,7 @@ export class TunnelRouter {
   }
 
   async unregisterTunnel(tunnelId: string): Promise<void> {
+    const metadata = this.tunnelMetadata.get(tunnelId);
     this.tunnels.delete(tunnelId);
     this.tunnelMetadata.delete(tunnelId);
 
@@ -80,6 +81,12 @@ export class TunnelRouter {
     if (this.redis) {
       try {
         await this.redis.del(this.redisKey(tunnelId));
+        if (metadata?.organizationId) {
+          await this.redis.zrem(
+            `org:${metadata.organizationId}:active_tunnels`,
+            tunnelId,
+          );
+        }
       } catch (error) {
         console.error("Failed to remove tunnel reservation", error);
       }
@@ -111,6 +118,18 @@ export class TunnelRouter {
       if (keys.length > 0) {
         try {
           await this.redis.del(...keys);
+
+          // Remove from organization active tunnels sets
+          const pipeline = this.redis.pipeline();
+          for (const [tunnelId, metadata] of this.tunnelMetadata) {
+            if (metadata.organizationId) {
+              pipeline.zrem(
+                `org:${metadata.organizationId}:active_tunnels`,
+                tunnelId,
+              );
+            }
+          }
+          await pipeline.exec();
         } catch (error) {
           console.error(
             "Failed to clear tunnel reservations on shutdown",
@@ -219,7 +238,16 @@ export class TunnelRouter {
           this.ttlSeconds,
           "NX",
         );
-        if (result === "OK") return true;
+        if (result === "OK") {
+          if (metadata?.organizationId) {
+            await this.redis.zadd(
+              `org:${metadata.organizationId}:active_tunnels`,
+              Date.now() + this.ttlSeconds * 1000,
+              tunnelId,
+            );
+          }
+          return true;
+        }
 
         // If NX failed, check if we can take over
         if (metadata?.userId) {
@@ -237,10 +265,24 @@ export class TunnelRouter {
                     this.tunnels.delete(tunnelId);
                   }
                   await this.redis.set(key, redisValue, "EX", this.ttlSeconds);
+                  if (metadata?.organizationId) {
+                    await this.redis.zadd(
+                      `org:${metadata.organizationId}:active_tunnels`,
+                      Date.now() + this.ttlSeconds * 1000,
+                      tunnelId,
+                    );
+                  }
                   return true;
                 } else if (!this.tunnels.has(tunnelId)) {
                   // Tunnel is not active, allow takeover
                   await this.redis.set(key, redisValue, "EX", this.ttlSeconds);
+                  if (metadata?.organizationId) {
+                    await this.redis.zadd(
+                      `org:${metadata.organizationId}:active_tunnels`,
+                      Date.now() + this.ttlSeconds * 1000,
+                      tunnelId,
+                    );
+                  }
                   return true;
                 }
                 // Tunnel is actively connected, deny takeover
@@ -264,6 +306,14 @@ export class TunnelRouter {
 
         if (result === null) {
           return this.persistTunnelState(tunnelId, "NX", metadata);
+        }
+
+        if (metadata?.organizationId) {
+          await this.redis.zadd(
+            `org:${metadata.organizationId}:active_tunnels`,
+            Date.now() + this.ttlSeconds * 1000,
+            tunnelId,
+          );
         }
 
         return true;
