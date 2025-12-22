@@ -35,6 +35,16 @@ export interface Subdomain {
   createdAt: Date;
 }
 
+export interface Domain {
+  id: string;
+  domain: string;
+  organizationId: string;
+  userId: string;
+  status: "pending" | "active" | "failed";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 interface CreateAuthTokenParams {
   name: string;
   organizationId: string;
@@ -42,6 +52,11 @@ interface CreateAuthTokenParams {
 
 interface DeleteAuthTokenParams {
   id: string;
+}
+
+interface CreateDomainParams {
+  domain: string;
+  organizationId: string;
 }
 
 type SuccessResponse<T> = T;
@@ -119,6 +134,21 @@ export const appClient = {
 
     delete: async (id: string) =>
       apiCall<{ success: boolean }>("delete", `/api/subdomains/${id}`),
+  },
+
+  domains: {
+    list: async (organizationId: string) =>
+      apiCall<{ domains: Domain[] }>("get", "/api/domains", {
+        params: { organizationId },
+      }),
+
+    create: async (params: CreateDomainParams) =>
+      apiCall<{ domain: Domain }>("post", "/api/domains", {
+        data: params,
+      }),
+
+    delete: async (domainId: string) =>
+      apiCall<{ message: string }>("delete", `/api/domains/${domainId}`),
   },
 
   stats: {
