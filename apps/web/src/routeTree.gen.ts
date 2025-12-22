@@ -18,12 +18,14 @@ import { Route as DashSubdomainsRouteImport } from './routes/dash/subdomains'
 import { Route as DashSettingsRouteImport } from './routes/dash/settings'
 import { Route as DashRequestsRouteImport } from './routes/dash/requests'
 import { Route as DashInstallRouteImport } from './routes/dash/install'
+import { Route as DashDomainsRouteImport } from './routes/dash/domains'
 import { Route as CliLoginRouteImport } from './routes/cli.login'
 import { Route as ApiSubdomainsRouteImport } from './routes/api/subdomains'
 import { Route as ApiRequestsRouteImport } from './routes/api/requests'
 import { Route as ApiAuthTokensRouteImport } from './routes/api/auth-tokens'
 import { Route as DashTunnelsIndexRouteImport } from './routes/dash/tunnels/index'
 import { Route as ApiTunnelsIndexRouteImport } from './routes/api/tunnels/index'
+import { Route as ApiDomainsIndexRouteImport } from './routes/api/domains/index'
 import { Route as DashTunnelsTunnelIdRouteImport } from './routes/dash/tunnels/$tunnelId'
 import { Route as ApiTunnelsTunnelIdRouteImport } from './routes/api/tunnels/$tunnelId'
 import { Route as ApiTunnelRegisterRouteImport } from './routes/api/tunnel/register'
@@ -33,6 +35,7 @@ import { Route as ApiSubdomainsSubdomainIdRouteImport } from './routes/api/subdo
 import { Route as ApiStatsTunnelRouteImport } from './routes/api/stats/tunnel'
 import { Route as ApiStatsOverviewRouteImport } from './routes/api/stats/overview'
 import { Route as ApiMeOrgsRouteImport } from './routes/api/me/orgs'
+import { Route as ApiDomainsDomainIdRouteImport } from './routes/api/domains/$domainId'
 import { Route as ApiCliLoginRouteImport } from './routes/api/cli/login'
 import { Route as ApiCliExchangeRouteImport } from './routes/api/cli/exchange'
 import { Route as ApiCliCompleteRouteImport } from './routes/api/cli/complete'
@@ -84,6 +87,11 @@ const DashInstallRoute = DashInstallRouteImport.update({
   path: '/install',
   getParentRoute: () => DashRoute,
 } as any)
+const DashDomainsRoute = DashDomainsRouteImport.update({
+  id: '/domains',
+  path: '/domains',
+  getParentRoute: () => DashRoute,
+} as any)
 const CliLoginRoute = CliLoginRouteImport.update({
   id: '/cli/login',
   path: '/cli/login',
@@ -112,6 +120,11 @@ const DashTunnelsIndexRoute = DashTunnelsIndexRouteImport.update({
 const ApiTunnelsIndexRoute = ApiTunnelsIndexRouteImport.update({
   id: '/api/tunnels/',
   path: '/api/tunnels/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDomainsIndexRoute = ApiDomainsIndexRouteImport.update({
+  id: '/api/domains/',
+  path: '/api/domains/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashTunnelsTunnelIdRoute = DashTunnelsTunnelIdRouteImport.update({
@@ -160,6 +173,11 @@ const ApiMeOrgsRoute = ApiMeOrgsRouteImport.update({
   path: '/api/me/orgs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDomainsDomainIdRoute = ApiDomainsDomainIdRouteImport.update({
+  id: '/api/domains/$domainId',
+  path: '/api/domains/$domainId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCliLoginRoute = ApiCliLoginRouteImport.update({
   id: '/api/cli/login',
   path: '/api/cli/login',
@@ -195,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/api/requests': typeof ApiRequestsRoute
   '/api/subdomains': typeof ApiSubdomainsRouteWithChildren
   '/cli/login': typeof CliLoginRoute
+  '/dash/domains': typeof DashDomainsRoute
   '/dash/install': typeof DashInstallRoute
   '/dash/requests': typeof DashRequestsRoute
   '/dash/settings': typeof DashSettingsRoute
@@ -204,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/api/cli/complete': typeof ApiCliCompleteRoute
   '/api/cli/exchange': typeof ApiCliExchangeRoute
   '/api/cli/login': typeof ApiCliLoginRouteWithChildren
+  '/api/domains/$domainId': typeof ApiDomainsDomainIdRoute
   '/api/me/orgs': typeof ApiMeOrgsRoute
   '/api/stats/overview': typeof ApiStatsOverviewRoute
   '/api/stats/tunnel': typeof ApiStatsTunnelRoute
@@ -213,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/api/tunnel/register': typeof ApiTunnelRegisterRoute
   '/api/tunnels/$tunnelId': typeof ApiTunnelsTunnelIdRoute
   '/dash/tunnels/$tunnelId': typeof DashTunnelsTunnelIdRoute
+  '/api/domains': typeof ApiDomainsIndexRoute
   '/api/tunnels': typeof ApiTunnelsIndexRoute
   '/dash/tunnels': typeof DashTunnelsIndexRoute
   '/api/cli/login/status': typeof ApiCliLoginStatusRoute
@@ -225,6 +246,7 @@ export interface FileRoutesByTo {
   '/api/requests': typeof ApiRequestsRoute
   '/api/subdomains': typeof ApiSubdomainsRouteWithChildren
   '/cli/login': typeof CliLoginRoute
+  '/dash/domains': typeof DashDomainsRoute
   '/dash/install': typeof DashInstallRoute
   '/dash/requests': typeof DashRequestsRoute
   '/dash/settings': typeof DashSettingsRoute
@@ -234,6 +256,7 @@ export interface FileRoutesByTo {
   '/api/cli/complete': typeof ApiCliCompleteRoute
   '/api/cli/exchange': typeof ApiCliExchangeRoute
   '/api/cli/login': typeof ApiCliLoginRouteWithChildren
+  '/api/domains/$domainId': typeof ApiDomainsDomainIdRoute
   '/api/me/orgs': typeof ApiMeOrgsRoute
   '/api/stats/overview': typeof ApiStatsOverviewRoute
   '/api/stats/tunnel': typeof ApiStatsTunnelRoute
@@ -243,6 +266,7 @@ export interface FileRoutesByTo {
   '/api/tunnel/register': typeof ApiTunnelRegisterRoute
   '/api/tunnels/$tunnelId': typeof ApiTunnelsTunnelIdRoute
   '/dash/tunnels/$tunnelId': typeof DashTunnelsTunnelIdRoute
+  '/api/domains': typeof ApiDomainsIndexRoute
   '/api/tunnels': typeof ApiTunnelsIndexRoute
   '/dash/tunnels': typeof DashTunnelsIndexRoute
   '/api/cli/login/status': typeof ApiCliLoginStatusRoute
@@ -257,6 +281,7 @@ export interface FileRoutesById {
   '/api/requests': typeof ApiRequestsRoute
   '/api/subdomains': typeof ApiSubdomainsRouteWithChildren
   '/cli/login': typeof CliLoginRoute
+  '/dash/domains': typeof DashDomainsRoute
   '/dash/install': typeof DashInstallRoute
   '/dash/requests': typeof DashRequestsRoute
   '/dash/settings': typeof DashSettingsRoute
@@ -266,6 +291,7 @@ export interface FileRoutesById {
   '/api/cli/complete': typeof ApiCliCompleteRoute
   '/api/cli/exchange': typeof ApiCliExchangeRoute
   '/api/cli/login': typeof ApiCliLoginRouteWithChildren
+  '/api/domains/$domainId': typeof ApiDomainsDomainIdRoute
   '/api/me/orgs': typeof ApiMeOrgsRoute
   '/api/stats/overview': typeof ApiStatsOverviewRoute
   '/api/stats/tunnel': typeof ApiStatsTunnelRoute
@@ -275,6 +301,7 @@ export interface FileRoutesById {
   '/api/tunnel/register': typeof ApiTunnelRegisterRoute
   '/api/tunnels/$tunnelId': typeof ApiTunnelsTunnelIdRoute
   '/dash/tunnels/$tunnelId': typeof DashTunnelsTunnelIdRoute
+  '/api/domains/': typeof ApiDomainsIndexRoute
   '/api/tunnels/': typeof ApiTunnelsIndexRoute
   '/dash/tunnels/': typeof DashTunnelsIndexRoute
   '/api/cli/login/status': typeof ApiCliLoginStatusRoute
@@ -290,6 +317,7 @@ export interface FileRouteTypes {
     | '/api/requests'
     | '/api/subdomains'
     | '/cli/login'
+    | '/dash/domains'
     | '/dash/install'
     | '/dash/requests'
     | '/dash/settings'
@@ -299,6 +327,7 @@ export interface FileRouteTypes {
     | '/api/cli/complete'
     | '/api/cli/exchange'
     | '/api/cli/login'
+    | '/api/domains/$domainId'
     | '/api/me/orgs'
     | '/api/stats/overview'
     | '/api/stats/tunnel'
@@ -308,6 +337,7 @@ export interface FileRouteTypes {
     | '/api/tunnel/register'
     | '/api/tunnels/$tunnelId'
     | '/dash/tunnels/$tunnelId'
+    | '/api/domains'
     | '/api/tunnels'
     | '/dash/tunnels'
     | '/api/cli/login/status'
@@ -320,6 +350,7 @@ export interface FileRouteTypes {
     | '/api/requests'
     | '/api/subdomains'
     | '/cli/login'
+    | '/dash/domains'
     | '/dash/install'
     | '/dash/requests'
     | '/dash/settings'
@@ -329,6 +360,7 @@ export interface FileRouteTypes {
     | '/api/cli/complete'
     | '/api/cli/exchange'
     | '/api/cli/login'
+    | '/api/domains/$domainId'
     | '/api/me/orgs'
     | '/api/stats/overview'
     | '/api/stats/tunnel'
@@ -338,6 +370,7 @@ export interface FileRouteTypes {
     | '/api/tunnel/register'
     | '/api/tunnels/$tunnelId'
     | '/dash/tunnels/$tunnelId'
+    | '/api/domains'
     | '/api/tunnels'
     | '/dash/tunnels'
     | '/api/cli/login/status'
@@ -351,6 +384,7 @@ export interface FileRouteTypes {
     | '/api/requests'
     | '/api/subdomains'
     | '/cli/login'
+    | '/dash/domains'
     | '/dash/install'
     | '/dash/requests'
     | '/dash/settings'
@@ -360,6 +394,7 @@ export interface FileRouteTypes {
     | '/api/cli/complete'
     | '/api/cli/exchange'
     | '/api/cli/login'
+    | '/api/domains/$domainId'
     | '/api/me/orgs'
     | '/api/stats/overview'
     | '/api/stats/tunnel'
@@ -369,6 +404,7 @@ export interface FileRouteTypes {
     | '/api/tunnel/register'
     | '/api/tunnels/$tunnelId'
     | '/dash/tunnels/$tunnelId'
+    | '/api/domains/'
     | '/api/tunnels/'
     | '/dash/tunnels/'
     | '/api/cli/login/status'
@@ -387,6 +423,7 @@ export interface RootRouteChildren {
   ApiCliCompleteRoute: typeof ApiCliCompleteRoute
   ApiCliExchangeRoute: typeof ApiCliExchangeRoute
   ApiCliLoginRoute: typeof ApiCliLoginRouteWithChildren
+  ApiDomainsDomainIdRoute: typeof ApiDomainsDomainIdRoute
   ApiMeOrgsRoute: typeof ApiMeOrgsRoute
   ApiStatsOverviewRoute: typeof ApiStatsOverviewRoute
   ApiStatsTunnelRoute: typeof ApiStatsTunnelRoute
@@ -394,6 +431,7 @@ export interface RootRouteChildren {
   ApiTunnelCheckSubdomainRoute: typeof ApiTunnelCheckSubdomainRoute
   ApiTunnelRegisterRoute: typeof ApiTunnelRegisterRoute
   ApiTunnelsTunnelIdRoute: typeof ApiTunnelsTunnelIdRoute
+  ApiDomainsIndexRoute: typeof ApiDomainsIndexRoute
   ApiTunnelsIndexRoute: typeof ApiTunnelsIndexRoute
 }
 
@@ -462,6 +500,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashInstallRouteImport
       parentRoute: typeof DashRoute
     }
+    '/dash/domains': {
+      id: '/dash/domains'
+      path: '/domains'
+      fullPath: '/dash/domains'
+      preLoaderRoute: typeof DashDomainsRouteImport
+      parentRoute: typeof DashRoute
+    }
     '/cli/login': {
       id: '/cli/login'
       path: '/cli/login'
@@ -502,6 +547,13 @@ declare module '@tanstack/react-router' {
       path: '/api/tunnels'
       fullPath: '/api/tunnels'
       preLoaderRoute: typeof ApiTunnelsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/domains/': {
+      id: '/api/domains/'
+      path: '/api/domains'
+      fullPath: '/api/domains'
+      preLoaderRoute: typeof ApiDomainsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dash/tunnels/$tunnelId': {
@@ -567,6 +619,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMeOrgsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/domains/$domainId': {
+      id: '/api/domains/$domainId'
+      path: '/api/domains/$domainId'
+      fullPath: '/api/domains/$domainId'
+      preLoaderRoute: typeof ApiDomainsDomainIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/cli/login': {
       id: '/api/cli/login'
       path: '/api/cli/login'
@@ -606,6 +665,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface DashRouteChildren {
+  DashDomainsRoute: typeof DashDomainsRoute
   DashInstallRoute: typeof DashInstallRoute
   DashRequestsRoute: typeof DashRequestsRoute
   DashSettingsRoute: typeof DashSettingsRoute
@@ -616,6 +676,7 @@ interface DashRouteChildren {
 }
 
 const DashRouteChildren: DashRouteChildren = {
+  DashDomainsRoute: DashDomainsRoute,
   DashInstallRoute: DashInstallRoute,
   DashRequestsRoute: DashRequestsRoute,
   DashSettingsRoute: DashSettingsRoute,
@@ -664,6 +725,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCliCompleteRoute: ApiCliCompleteRoute,
   ApiCliExchangeRoute: ApiCliExchangeRoute,
   ApiCliLoginRoute: ApiCliLoginRouteWithChildren,
+  ApiDomainsDomainIdRoute: ApiDomainsDomainIdRoute,
   ApiMeOrgsRoute: ApiMeOrgsRoute,
   ApiStatsOverviewRoute: ApiStatsOverviewRoute,
   ApiStatsTunnelRoute: ApiStatsTunnelRoute,
@@ -671,6 +733,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTunnelCheckSubdomainRoute: ApiTunnelCheckSubdomainRoute,
   ApiTunnelRegisterRoute: ApiTunnelRegisterRoute,
   ApiTunnelsTunnelIdRoute: ApiTunnelsTunnelIdRoute,
+  ApiDomainsIndexRoute: ApiDomainsIndexRoute,
   ApiTunnelsIndexRoute: ApiTunnelsIndexRoute,
 }
 export const routeTree = rootRouteImport
