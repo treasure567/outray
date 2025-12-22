@@ -25,6 +25,12 @@ jobs:
           cd apps/tunnel
           npm run build
 
+      - name: Build Internal Check
+        run: |
+          cd apps/internal-check
+          npm install
+          npm run build
+
       - name: Deploy Tunnel Files
         uses: appleboy/scp-action@master
         with:
@@ -34,6 +40,17 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           source: "apps/tunnel/dist,apps/tunnel/package.json"
           target: "/root/outray/tunnel"
+          strip_components: 2
+
+      - name: Deploy Internal Check Files
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "apps/internal-check/dist,apps/internal-check/package.json"
+          target: "/root/outray/internal-check"
           strip_components: 2
 
       - name: Deploy Script
@@ -56,12 +73,13 @@ jobs:
           CLICKHOUSE_USER: ${{ secrets.CLICKHOUSE_USER }}
           CLICKHOUSE_PASSWORD: ${{ secrets.CLICKHOUSE_PASSWORD }}
           CLICKHOUSE_DATABASE: ${{ secrets.CLICKHOUSE_DATABASE }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          envs: REDIS_URL,REDIS_TUNNEL_TTL_SECONDS,REDIS_HEARTBEAT_INTERVAL_MS,CLICKHOUSE_URL,CLICKHOUSE_USER,CLICKHOUSE_PASSWORD,CLICKHOUSE_DATABASE
+          envs: REDIS_URL,REDIS_TUNNEL_TTL_SECONDS,REDIS_HEARTBEAT_INTERVAL_MS,CLICKHOUSE_URL,CLICKHOUSE_USER,CLICKHOUSE_PASSWORD,CLICKHOUSE_DATABASE,DATABASE_URL
           script: |
             chmod +x /root/outray/deploy.sh
             /root/outray/deploy.sh
