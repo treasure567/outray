@@ -6,6 +6,12 @@ import {
   organizations,
   members,
   invitations,
+  cliLoginSessions,
+  cliUserTokens,
+  cliOrgTokens,
+  cliLoginSessionsRelations,
+  cliUserTokensRelations,
+  cliOrgTokensRelations,
 } from "./auth-schema";
 
 import {
@@ -27,6 +33,9 @@ export {
   organizations,
   members,
   invitations,
+  cliLoginSessions,
+  cliUserTokens,
+  cliOrgTokens,
   tunnels,
   subdomains,
   authTokens,
@@ -35,4 +44,7 @@ export {
   authTokensRelations,
   usersAppRelations,
   organizationsAppRelations,
+  cliLoginSessionsRelations,
+  cliUserTokensRelations,
+  cliOrgTokensRelations,
 };
