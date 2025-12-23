@@ -18,8 +18,11 @@ import { Route as InternalDomainCheckRouteImport } from './routes/internal/domai
 import { Route as DashSubdomainsRouteImport } from './routes/dash/subdomains'
 import { Route as DashSettingsRouteImport } from './routes/dash/settings'
 import { Route as DashRequestsRouteImport } from './routes/dash/requests'
+import { Route as DashMembersRouteImport } from './routes/dash/members'
 import { Route as DashInstallRouteImport } from './routes/dash/install'
 import { Route as DashDomainsRouteImport } from './routes/dash/domains'
+import { Route as DashBillingRouteImport } from './routes/dash/billing'
+import { Route as DashActivityRouteImport } from './routes/dash/activity'
 import { Route as CliLoginRouteImport } from './routes/cli.login'
 import { Route as ApiSubdomainsRouteImport } from './routes/api/subdomains'
 import { Route as ApiRequestsRouteImport } from './routes/api/requests'
@@ -90,6 +93,11 @@ const DashRequestsRoute = DashRequestsRouteImport.update({
   path: '/requests',
   getParentRoute: () => DashRoute,
 } as any)
+const DashMembersRoute = DashMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => DashRoute,
+} as any)
 const DashInstallRoute = DashInstallRouteImport.update({
   id: '/install',
   path: '/install',
@@ -98,6 +106,16 @@ const DashInstallRoute = DashInstallRouteImport.update({
 const DashDomainsRoute = DashDomainsRouteImport.update({
   id: '/domains',
   path: '/domains',
+  getParentRoute: () => DashRoute,
+} as any)
+const DashBillingRoute = DashBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => DashRoute,
+} as any)
+const DashActivityRoute = DashActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
   getParentRoute: () => DashRoute,
 } as any)
 const CliLoginRoute = CliLoginRouteImport.update({
@@ -233,8 +251,11 @@ export interface FileRoutesByFullPath {
   '/api/requests': typeof ApiRequestsRoute
   '/api/subdomains': typeof ApiSubdomainsRouteWithChildren
   '/cli/login': typeof CliLoginRoute
+  '/dash/activity': typeof DashActivityRoute
+  '/dash/billing': typeof DashBillingRoute
   '/dash/domains': typeof DashDomainsRoute
   '/dash/install': typeof DashInstallRoute
+  '/dash/members': typeof DashMembersRoute
   '/dash/requests': typeof DashRequestsRoute
   '/dash/settings': typeof DashSettingsRoute
   '/dash/subdomains': typeof DashSubdomainsRoute
@@ -269,8 +290,11 @@ export interface FileRoutesByTo {
   '/api/requests': typeof ApiRequestsRoute
   '/api/subdomains': typeof ApiSubdomainsRouteWithChildren
   '/cli/login': typeof CliLoginRoute
+  '/dash/activity': typeof DashActivityRoute
+  '/dash/billing': typeof DashBillingRoute
   '/dash/domains': typeof DashDomainsRoute
   '/dash/install': typeof DashInstallRoute
+  '/dash/members': typeof DashMembersRoute
   '/dash/requests': typeof DashRequestsRoute
   '/dash/settings': typeof DashSettingsRoute
   '/dash/subdomains': typeof DashSubdomainsRoute
@@ -307,8 +331,11 @@ export interface FileRoutesById {
   '/api/requests': typeof ApiRequestsRoute
   '/api/subdomains': typeof ApiSubdomainsRouteWithChildren
   '/cli/login': typeof CliLoginRoute
+  '/dash/activity': typeof DashActivityRoute
+  '/dash/billing': typeof DashBillingRoute
   '/dash/domains': typeof DashDomainsRoute
   '/dash/install': typeof DashInstallRoute
+  '/dash/members': typeof DashMembersRoute
   '/dash/requests': typeof DashRequestsRoute
   '/dash/settings': typeof DashSettingsRoute
   '/dash/subdomains': typeof DashSubdomainsRoute
@@ -346,8 +373,11 @@ export interface FileRouteTypes {
     | '/api/requests'
     | '/api/subdomains'
     | '/cli/login'
+    | '/dash/activity'
+    | '/dash/billing'
     | '/dash/domains'
     | '/dash/install'
+    | '/dash/members'
     | '/dash/requests'
     | '/dash/settings'
     | '/dash/subdomains'
@@ -382,8 +412,11 @@ export interface FileRouteTypes {
     | '/api/requests'
     | '/api/subdomains'
     | '/cli/login'
+    | '/dash/activity'
+    | '/dash/billing'
     | '/dash/domains'
     | '/dash/install'
+    | '/dash/members'
     | '/dash/requests'
     | '/dash/settings'
     | '/dash/subdomains'
@@ -419,8 +452,11 @@ export interface FileRouteTypes {
     | '/api/requests'
     | '/api/subdomains'
     | '/cli/login'
+    | '/dash/activity'
+    | '/dash/billing'
     | '/dash/domains'
     | '/dash/install'
+    | '/dash/members'
     | '/dash/requests'
     | '/dash/settings'
     | '/dash/subdomains'
@@ -540,6 +576,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashRequestsRouteImport
       parentRoute: typeof DashRoute
     }
+    '/dash/members': {
+      id: '/dash/members'
+      path: '/members'
+      fullPath: '/dash/members'
+      preLoaderRoute: typeof DashMembersRouteImport
+      parentRoute: typeof DashRoute
+    }
     '/dash/install': {
       id: '/dash/install'
       path: '/install'
@@ -552,6 +595,20 @@ declare module '@tanstack/react-router' {
       path: '/domains'
       fullPath: '/dash/domains'
       preLoaderRoute: typeof DashDomainsRouteImport
+      parentRoute: typeof DashRoute
+    }
+    '/dash/billing': {
+      id: '/dash/billing'
+      path: '/billing'
+      fullPath: '/dash/billing'
+      preLoaderRoute: typeof DashBillingRouteImport
+      parentRoute: typeof DashRoute
+    }
+    '/dash/activity': {
+      id: '/dash/activity'
+      path: '/activity'
+      fullPath: '/dash/activity'
+      preLoaderRoute: typeof DashActivityRouteImport
       parentRoute: typeof DashRoute
     }
     '/cli/login': {
@@ -726,8 +783,11 @@ declare module '@tanstack/react-router' {
 }
 
 interface DashRouteChildren {
+  DashActivityRoute: typeof DashActivityRoute
+  DashBillingRoute: typeof DashBillingRoute
   DashDomainsRoute: typeof DashDomainsRoute
   DashInstallRoute: typeof DashInstallRoute
+  DashMembersRoute: typeof DashMembersRoute
   DashRequestsRoute: typeof DashRequestsRoute
   DashSettingsRoute: typeof DashSettingsRoute
   DashSubdomainsRoute: typeof DashSubdomainsRoute
@@ -737,8 +797,11 @@ interface DashRouteChildren {
 }
 
 const DashRouteChildren: DashRouteChildren = {
+  DashActivityRoute: DashActivityRoute,
+  DashBillingRoute: DashBillingRoute,
   DashDomainsRoute: DashDomainsRoute,
   DashInstallRoute: DashInstallRoute,
+  DashMembersRoute: DashMembersRoute,
   DashRequestsRoute: DashRequestsRoute,
   DashSettingsRoute: DashSettingsRoute,
   DashSubdomainsRoute: DashSubdomainsRoute,
