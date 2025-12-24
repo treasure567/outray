@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, MoreVertical, X, Mail, Shield, Loader2 } from "lucide-react";
 import { authClient } from "../../lib/auth-client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAppStore } from "../../lib/store";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/dash/members")({
   component: MembersView,
@@ -10,127 +11,172 @@ export const Route = createFileRoute("/dash/members")({
 
 function MembersView() {
   const { selectedOrganizationId } = useAppStore();
-  const [members, setMembers] = useState<any[]>([]);
-  const [invitations, setInvitations] = useState<any[]>([]);
+  const queryClient = useQueryClient();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"member" | "admin" | "owner">(
     "member",
   );
-  const [isInviting, setIsInviting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchData = async () => {
-    if (!selectedOrganizationId) return;
-    setIsLoading(true);
-    try {
-      const [membersRes, invitationsRes] = await Promise.all([
-        authClient.organization.listMembers({
-          query: {
-            organizationId: selectedOrganizationId,
-          },
-        }),
-        authClient.organization.listInvitations({
-          query: {
-            organizationId: selectedOrganizationId,
-          },
-        }),
-      ]);
-
-      if (membersRes.data) setMembers(membersRes.data.members || []);
-      if (invitationsRes.data) {
-        // Filter out cancelled and accepted invitations
-        const activeInvitations = invitationsRes.data.filter(
-          (inv: any) =>
-            inv.status !== "canceled" &&
-            inv.status !== "cancelled" &&
-            inv.status !== "accepted",
-        );
-        setInvitations(activeInvitations);
-      }
-    } catch (e) {
-      console.error("Failed to fetch members/invitations", e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [selectedOrganizationId]);
-
-  const handleInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedOrganizationId) return;
-
-    setIsInviting(true);
-    try {
-      const res = await authClient.organization.inviteMember({
-        email: inviteEmail,
-        role: inviteRole,
-        organizationId: selectedOrganizationId,
+  const { data: membersData, isLoading: isLoadingMembers } = useQuery({
+    queryKey: ["members", selectedOrganizationId],
+    queryFn: async () => {
+      if (!selectedOrganizationId) return [];
+      const res = await authClient.organization.listMembers({
+        query: {
+          organizationId: selectedOrganizationId,
+        },
       });
+      return res.data?.members || [];
+    },
+    enabled: !!selectedOrganizationId,
+  });
 
-      if (res.error) {
-        alert(res.error.message);
-      } else {
-        setInviteEmail("");
-        setIsInviteModalOpen(false);
-        fetchData();
-      }
-    } catch (e) {
-      alert("Failed to invite member");
-    } finally {
-      setIsInviting(false);
-    }
-  };
+  const { data: invitationsData, isLoading: isLoadingInvitations } = useQuery({
+    queryKey: ["invitations", selectedOrganizationId],
+    queryFn: async () => {
+      if (!selectedOrganizationId) return [];
+      const res = await authClient.organization.listInvitations({
+        query: {
+          organizationId: selectedOrganizationId,
+        },
+      });
+      // Filter out cancelled and accepted invitations
+      const activeInvitations = (res.data || []).filter(
+        (inv: any) =>
+          inv.status !== "canceled" &&
+          inv.status !== "cancelled" &&
+          inv.status !== "accepted",
+      );
+      return activeInvitations;
+    },
+    enabled: !!selectedOrganizationId,
+  });
 
-  const cancelInvitation = async (invitationId: string) => {
-    if (!confirm("Are you sure you want to cancel this invitation?")) return;
+  const inviteMutation = useMutation({
+    mutationFn: async (data: {
+      email: string;
+      role: "member" | "admin" | "owner";
+    }) => {
+      const res = await authClient.organization.inviteMember({
+        email: data.email,
+        role: data.role,
+        organizationId: selectedOrganizationId!,
+      });
+      if (res.error) throw new Error(res.error.message);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["invitations", selectedOrganizationId],
+      });
+      setInviteEmail("");
+      setIsInviteModalOpen(false);
+    },
+    onError: (error: Error) => {
+      alert(error.message || "Failed to invite member");
+    },
+  });
 
-    // Optimistic update - remove from UI immediately
-    setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
-
-    try {
+  const cancelInvitationMutation = useMutation({
+    mutationFn: async (invitationId: string) => {
       const res = await authClient.organization.cancelInvitation({
         invitationId,
       });
-
-      if (res.error) {
-        alert(res.error.message);
-        // Revert on error
-        fetchData();
-      }
-    } catch (e) {
-      alert("Failed to cancel invitation");
+      if (res.error) throw new Error(res.error.message);
+      return res.data;
+    },
+    onMutate: async (invitationId) => {
+      // Optimistic update
+      await queryClient.cancelQueries({
+        queryKey: ["invitations", selectedOrganizationId],
+      });
+      const previousInvitations = queryClient.getQueryData([
+        "invitations",
+        selectedOrganizationId,
+      ]);
+      queryClient.setQueryData(
+        ["invitations", selectedOrganizationId],
+        (old: any[]) => old?.filter((inv) => inv.id !== invitationId) || [],
+      );
+      return { previousInvitations };
+    },
+    onError: (error: Error, _invitationId, context) => {
       // Revert on error
-      fetchData();
-    }
-  };
+      if (context?.previousInvitations) {
+        queryClient.setQueryData(
+          ["invitations", selectedOrganizationId],
+          context.previousInvitations,
+        );
+      }
+      alert(error.message || "Failed to cancel invitation");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["invitations", selectedOrganizationId],
+      });
+    },
+  });
 
-  const removeMember = async (memberId: string) => {
-    if (!confirm("Are you sure you want to remove this member?")) return;
-
-    // Optimistic update - remove from UI immediately
-    setMembers((prev) => prev.filter((member) => member.id !== memberId));
-
-    try {
+  const removeMemberMutation = useMutation({
+    mutationFn: async (memberId: string) => {
       const res = await authClient.organization.removeMember({
         memberIdOrEmail: memberId,
         organizationId: selectedOrganizationId!,
       });
-
-      if (res.error) {
-        alert(res.error.message);
-        // Revert on error
-        fetchData();
-      }
-    } catch (e) {
-      alert("Failed to remove member");
+      if (res.error) throw new Error(res.error.message);
+      return res.data;
+    },
+    onMutate: async (memberId) => {
+      // Optimistic update
+      await queryClient.cancelQueries({
+        queryKey: ["members", selectedOrganizationId],
+      });
+      const previousMembers = queryClient.getQueryData([
+        "members",
+        selectedOrganizationId,
+      ]);
+      queryClient.setQueryData(
+        ["members", selectedOrganizationId],
+        (old: any[]) => old?.filter((member) => member.id !== memberId) || [],
+      );
+      return { previousMembers };
+    },
+    onError: (error: Error, _memberId, context) => {
       // Revert on error
-      fetchData();
-    }
+      if (context?.previousMembers) {
+        queryClient.setQueryData(
+          ["members", selectedOrganizationId],
+          context.previousMembers,
+        );
+      }
+      alert(error.message || "Failed to remove member");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["members", selectedOrganizationId],
+      });
+    },
+  });
+
+  const handleInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    inviteMutation.mutate({ email: inviteEmail, role: inviteRole });
   };
+
+  const cancelInvitation = async (invitationId: string) => {
+    if (!confirm("Are you sure you want to cancel this invitation?")) return;
+    cancelInvitationMutation.mutate(invitationId);
+  };
+
+  const removeMember = async (memberId: string) => {
+    if (!confirm("Are you sure you want to remove this member?")) return;
+    removeMemberMutation.mutate(memberId);
+  };
+
+  const members = membersData || [];
+  const invitations = invitationsData || [];
+  const isLoading = isLoadingMembers || isLoadingInvitations;
 
   return (
     <div className="max-w-4xl mx-auto relative">
@@ -308,10 +354,10 @@ function MembersView() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isInviting}
+                  disabled={inviteMutation.isPending}
                   className="flex-1 px-4 py-2.5 bg-white text-black rounded-xl font-medium hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {isInviting ? (
+                  {inviteMutation.isPending ? (
                     <>
                       <Loader2 size={18} className="animate-spin" />
                       Sending...
