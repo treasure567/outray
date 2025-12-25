@@ -7,13 +7,11 @@ const PROD_CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
 const DEV_CONFIG_FILE = path.join(CONFIG_DIR, "config.dev.json");
 
 export interface OutRayConfig {
-  authType: "user" | "legacy"; // legacy for old token-based
+  authType: "user";
   userToken?: string;
   activeOrgId?: string;
   orgToken?: string;
   orgTokenExpiresAt?: string;
-  // Legacy support
-  token?: string;
 }
 
 export class ConfigManager {
@@ -37,14 +35,6 @@ export class ConfigManager {
     try {
       const data = fs.readFileSync(this.configFile, "utf-8");
       const config = JSON.parse(data) as OutRayConfig;
-
-      // Auto-migrate legacy format
-      if (config.token && !config.authType) {
-        return {
-          authType: "legacy",
-          token: config.token,
-        };
-      }
 
       return config;
     } catch (e) {
@@ -76,10 +66,6 @@ export class ConfigManager {
   }
 
   getActiveToken(config: OutRayConfig): string | null {
-    if (config.authType === "legacy" && config.token) {
-      return config.token;
-    }
-
     if (config.authType === "user" && config.orgToken) {
       return config.orgToken;
     }
