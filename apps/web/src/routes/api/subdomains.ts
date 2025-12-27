@@ -4,6 +4,8 @@ import { eq } from "drizzle-orm";
 import { auth } from "../../lib/auth";
 import { db } from "../../db";
 import { subdomains } from "../../db/app-schema";
+import { subscriptions } from "../../db/subscription-schema";
+import { getPlanLimits } from "../../lib/subscription-plans";
 
 export const Route = createFileRoute("/api/subdomains")({
   server: {
@@ -78,6 +80,30 @@ export const Route = createFileRoute("/api/subdomains")({
 
         if (!hasAccess) {
           return json({ error: "Unauthorized" }, { status: 403 });
+        }
+
+        // Check subscription limits
+        const [subscription] = await db
+          .select()
+          .from(subscriptions)
+          .where(eq(subscriptions.organizationId, organizationId));
+
+        const currentPlan = subscription?.plan || "free";
+        const planLimits = getPlanLimits(currentPlan as any);
+        const subdomainLimit = planLimits.maxSubdomains;
+
+        const existingSubdomains = await db
+          .select()
+          .from(subdomains)
+          .where(eq(subdomains.organizationId, organizationId));
+
+        if (existingSubdomains.length >= subdomainLimit) {
+          return json(
+            {
+              error: `Subdomain limit reached. The ${currentPlan} plan allows ${subdomainLimit} subdomain${subdomainLimit > 1 ? "s" : ""}.`,
+            },
+            { status: 403 },
+          );
         }
 
         // Check if subdomain is already taken
