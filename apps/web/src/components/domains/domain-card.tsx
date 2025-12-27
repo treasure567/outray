@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Globe,
   CheckCircle,
@@ -5,6 +6,7 @@ import {
   Info,
   Copy,
   Trash2,
+  Check,
 } from "lucide-react";
 
 interface Domain {
@@ -27,11 +29,26 @@ export function DomainCard({
   onDelete,
   isVerifying,
 }: DomainCardProps) {
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const handleCopy = (text: string, fieldId: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(fieldId);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+
   const getRecordName = (domainName: string) => {
     const parts = domainName.split(".");
     if (parts.length <= 2) return "@";
     return parts.slice(0, parts.length - 2).join(".");
   };
+
+  const cnameName = getRecordName(domain.domain);
+  const cnameValue = "edge.outray.app";
+
+  const txtName =
+    cnameName === "@" ? "_outray-challenge" : `_outray-challenge.${cnameName}`;
+  const txtValue = domain.id;
 
   return (
     <div className="group flex items-center justify-between bg-white/2 border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all">
@@ -83,39 +100,57 @@ export function DomainCard({
               <div className="p-4 space-y-3">
                 {/* CNAME Record */}
                 <div className="bg-white/5 rounded-xl border border-white/5 overflow-hidden">
-                  <div className="grid grid-cols-[60px_1fr_1fr_32px] gap-4 p-2.5 border-b border-white/5 text-[10px] font-medium text-white/40 uppercase tracking-wider">
+                  <div className="grid grid-cols-[60px_1fr_1fr] gap-4 p-2.5 border-b border-white/5 text-[10px] font-medium text-white/40 uppercase tracking-wider">
                     <div>Type</div>
                     <div>Name</div>
                     <div>Value</div>
-                    <div></div>
                   </div>
-                  <div className="grid grid-cols-[60px_1fr_1fr_32px] gap-4 p-3 items-center">
+                  <div className="grid grid-cols-[60px_1fr_1fr] gap-4 p-3 items-center">
                     <div>
                       <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-medium ring-1 ring-inset ring-blue-500/20">
                         CNAME
                       </span>
                     </div>
-                    <div
-                      className="font-mono text-white/80 text-xs truncate"
-                      title={getRecordName(domain.domain)}
-                    >
-                      {getRecordName(domain.domain)}
-                    </div>
-                    <div
-                      className="font-mono text-white/60 text-xs truncate"
-                      title="edge.outray.app"
-                    >
-                      edge.outray.app
-                    </div>
-                    <div className="flex justify-end">
+                    <div className="flex items-center justify-between gap-2 min-w-0">
+                      <div
+                        className="font-mono text-white/80 text-xs truncate"
+                        title={cnameName}
+                      >
+                        {cnameName}
+                      </div>
                       <button
                         onClick={() =>
-                          navigator.clipboard.writeText("edge.outray.app")
+                          handleCopy(cnameName, `cname-name-${domain.id}`)
                         }
-                        className="p-1.5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors"
+                        className="p-1.5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors shrink-0"
+                        title="Copy name"
+                      >
+                        {copiedField === `cname-name-${domain.id}` ? (
+                          <Check className="w-3.5 h-3.5 text-green-400" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 min-w-0">
+                      <div
+                        className="font-mono text-white/60 text-xs truncate"
+                        title={cnameValue}
+                      >
+                        {cnameValue}
+                      </div>
+                      <button
+                        onClick={() =>
+                          handleCopy(cnameValue, `cname-value-${domain.id}`)
+                        }
+                        className="p-1.5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors shrink-0"
                         title="Copy value"
                       >
-                        <Copy className="w-3.5 h-3.5" />
+                        {copiedField === `cname-value-${domain.id}` ? (
+                          <Check className="w-3.5 h-3.5 text-green-400" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -123,43 +158,57 @@ export function DomainCard({
 
                 {/* TXT Record */}
                 <div className="bg-white/5 rounded-xl border border-white/5 overflow-hidden">
-                  <div className="grid grid-cols-[60px_1fr_1fr_32px] gap-4 p-2.5 border-b border-white/5 text-[10px] font-medium text-white/40 uppercase tracking-wider">
+                  <div className="grid grid-cols-[60px_1fr_1fr] gap-4 p-2.5 border-b border-white/5 text-[10px] font-medium text-white/40 uppercase tracking-wider">
                     <div>Type</div>
                     <div>Name</div>
                     <div>Value</div>
-                    <div></div>
                   </div>
-                  <div className="grid grid-cols-[60px_1fr_1fr_32px] gap-4 p-3 items-center">
+                  <div className="grid grid-cols-[60px_1fr_1fr] gap-4 p-3 items-center">
                     <div>
                       <span className="inline-flex items-center px-2 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-medium ring-1 ring-inset ring-purple-500/20">
                         TXT
                       </span>
                     </div>
-                    <div
-                      className="font-mono text-white/80 text-xs truncate"
-                      title={
-                        getRecordName(domain.domain) === "@"
-                          ? "_outray-challenge"
-                          : `_outray-challenge.${getRecordName(domain.domain)}`
-                      }
-                    >
-                      {getRecordName(domain.domain) === "@"
-                        ? "_outray-challenge"
-                        : `_outray-challenge.${getRecordName(domain.domain)}`}
-                    </div>
-                    <div
-                      className="font-mono text-white/60 text-xs truncate"
-                      title={domain.id}
-                    >
-                      {domain.id}
-                    </div>
-                    <div className="flex justify-end">
+                    <div className="flex items-center justify-between gap-2 min-w-0">
+                      <div
+                        className="font-mono text-white/80 text-xs truncate"
+                        title={txtName}
+                      >
+                        {txtName}
+                      </div>
                       <button
-                        onClick={() => navigator.clipboard.writeText(domain.id)}
-                        className="p-1.5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors"
+                        onClick={() =>
+                          handleCopy(txtName, `txt-name-${domain.id}`)
+                        }
+                        className="p-1.5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors shrink-0"
+                        title="Copy name"
+                      >
+                        {copiedField === `txt-name-${domain.id}` ? (
+                          <Check className="w-3.5 h-3.5 text-green-400" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 min-w-0">
+                      <div
+                        className="font-mono text-white/60 text-xs truncate"
+                        title={txtValue}
+                      >
+                        {txtValue}
+                      </div>
+                      <button
+                        onClick={() =>
+                          handleCopy(txtValue, `txt-value-${domain.id}`)
+                        }
+                        className="p-1.5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors shrink-0"
                         title="Copy value"
                       >
-                        <Copy className="w-3.5 h-3.5" />
+                        {copiedField === `txt-value-${domain.id}` ? (
+                          <Check className="w-3.5 h-3.5 text-green-400" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
                       </button>
                     </div>
                   </div>
