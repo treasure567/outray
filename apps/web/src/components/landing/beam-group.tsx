@@ -2,10 +2,6 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-type BeamGroupProps = {
-  interactive: boolean;
-};
-
 const generateParticles = (count: number) => {
   const pos = new Float32Array(count * 3);
   for (let i = 0; i < count; i += 1) {
@@ -123,21 +119,8 @@ function Spotlight() {
   );
 }
 
-export function BeamGroup({ interactive }: BeamGroupProps) {
+export function BeamGroup() {
   const group = useRef<THREE.Group>(null);
-
-  useFrame((state) => {
-    if (group.current) {
-      const maxRotation = Math.PI / 8;
-      const targetRotation = interactive ? state.mouse.y * maxRotation : 0;
-
-      group.current.rotation.z = THREE.MathUtils.lerp(
-        group.current.rotation.z,
-        targetRotation,
-        0.1,
-      );
-    }
-  });
 
   return (
     <group ref={group} position={[-10, 0, 0]}>

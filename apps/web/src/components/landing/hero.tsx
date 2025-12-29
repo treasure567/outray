@@ -1,27 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { MousePointer2, ArrowRight, Copy, Check } from "lucide-react";
+import { ArrowRight, Copy, Check } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Terminal } from "./Terminal";
 import { BeamGroup } from "./beam-group";
 
 export const Hero = () => {
-  const [interactive, setInteractive] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = window.localStorage.getItem("interactive-mode");
-      return saved !== null ? JSON.parse(saved) : false;
-    }
-    return false;
-  });
-
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    window.localStorage.setItem(
-      "interactive-mode",
-      JSON.stringify(interactive),
-    );
-  }, [interactive]);
 
   const copyCommand = () => {
     navigator.clipboard.writeText("npm install -g outray");
@@ -37,7 +22,7 @@ export const Hero = () => {
       >
         <Canvas camera={{ position: [0, 0, 15], fov: 45 }}>
           <color attach="background" args={["#000000"]} />
-          <BeamGroup interactive={interactive} />
+          <BeamGroup />
         </Canvas>
       </div>
 
@@ -83,17 +68,6 @@ export const Hero = () => {
           <Terminal />
         </div>
       </div>
-
-      <button
-        onClick={() => setInteractive(!interactive)}
-        className={`fixed bottom-8 right-8 p-4 rounded-full transition-all duration-300 pointer-events-auto z-50 ${
-          interactive
-            ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-            : "bg-white/10 text-white hover:bg-white/20"
-        }`}
-      >
-        <MousePointer2 size={24} />
-      </button>
     </div>
   );
 };
