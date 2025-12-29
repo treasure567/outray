@@ -28,6 +28,14 @@ export const Hero = () => {
 
       <div className="flex flex-col gap-8 max-w-360 mx-auto px-6 relative z-10 w-full items-center">
         <div className="flex flex-col gap-6 items-center mt-20">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-white/60 backdrop-blur-sm hover:bg-white/10 transition-colors cursor-default">
+            <div className="w-4 h-4 bg-[#F26522] flex items-center justify-center rounded-xs">
+              <span className="text-white text-[10px] font-bold font-sans">
+                Y
+              </span>
+            </div>
+            <span>Not backed by Y Combinator</span>
+          </div>
           <h1 className="text-5xl md:text-7xl font-bold text-center tracking-tight leading-[1.1]">
             <span className="bg-white/10 text-white rounded-2xl px-4 py-1 inline-block mb-2 md:mb-0">
               Expose
