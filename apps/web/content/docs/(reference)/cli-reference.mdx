@@ -23,7 +23,7 @@ Once authenticated, your session token is stored locally in your configuration f
 Starts multiple tunnels from a TOML configuration file. This is useful when you need to run multiple tunnels simultaneously.
 
 ```bash
-# Use default config.toml in current directory
+# Use default outray/config.toml
 outray start
 
 # Use a custom config file
@@ -32,7 +32,7 @@ outray start --config /path/to/config.toml
 
 **Options:**
 
-- `--config <path>`: Path to the TOML configuration file (default: `config.toml` in current directory).
+- `--config <path>`: Path to the TOML configuration file (default: `outray/config.toml`).
 
 See the [Configuration Files](#configuration-files) section below for details on the config file format.
 
@@ -41,7 +41,7 @@ See the [Configuration Files](#configuration-files) section below for details on
 Validates a TOML configuration file without starting any tunnels. Useful for checking your config file syntax and structure.
 
 ```bash
-# Validate default config.toml
+# Validate default outray/config.toml
 outray validate-config
 
 # Validate a custom config file
@@ -50,7 +50,7 @@ outray validate-config --config /path/to/config.toml
 
 **Options:**
 
-- `--config <path>`: Path to the TOML configuration file (default: `config.toml` in current directory).
+- `--config <path>`: Path to the TOML configuration file (default: `outray/config.toml`).
 
 ### `outray <port>`
 
@@ -105,7 +105,7 @@ You can define multiple tunnels in a TOML configuration file and start them all 
 
 ### Config File Format
 
-Create a `config.toml` file in your project directory:
+Create an `outray/config.toml` file in your project directory:
 
 ```toml
 [global]
@@ -159,7 +159,7 @@ remote_port = 30000
 # Validate your config file first
 outray validate-config
 
-# Start all tunnels from config.toml
+# Start all tunnels from outray/config.toml
 outray start
 
 # Start tunnels from a custom config file
