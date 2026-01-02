@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Globe, Plus } from "lucide-react";
 import { appClient } from "@/lib/app-client";
 import { getPlanLimits } from "@/lib/subscription-plans";
-import axios from "axios";
 import { SubdomainHeader } from "@/components/subdomains/subdomain-header";
 import { SubdomainLimitWarning } from "@/components/subdomains/subdomain-limit-warning";
 import { CreateSubdomainModal } from "@/components/subdomains/create-subdomain-modal";
@@ -27,8 +26,9 @@ function SubdomainsView() {
       queryKey: ["subscription", orgSlug],
       queryFn: async () => {
         if (!orgSlug) return null;
-        const response = await axios.get(`/api/${orgSlug}/subscriptions`);
-        return response.data;
+        const response = await appClient.subscriptions.get(orgSlug);
+        if ("error" in response) throw new Error(response.error);
+        return response;
       },
       enabled: !!orgSlug,
     },

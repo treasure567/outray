@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { appClient } from "@/lib/app-client";
 import { getPlanLimits } from "@/lib/subscription-plans";
-import axios from "axios";
 import { NewTunnelModal } from "@/components/new-tunnel-modal";
 import { LimitModal } from "@/components/limit-modal";
 
@@ -36,8 +35,9 @@ function TunnelsView() {
     queryKey: ["subscription", orgSlug],
     queryFn: async () => {
       if (!orgSlug) return null;
-      const response = await axios.get(`/api/${orgSlug}/subscriptions`);
-      return response.data;
+      const response = await appClient.subscriptions.get(orgSlug);
+      if ("error" in response) throw new Error(response.error);
+      return response;
     },
     enabled: !!orgSlug,
   });

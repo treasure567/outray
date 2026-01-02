@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { authClient } from "@/lib/auth-client";
+import { appClient } from "@/lib/app-client";
 import {
   Building2,
   ArrowRight,
@@ -76,12 +77,13 @@ function Onboarding() {
 
     setIsCheckingSlug(true);
     try {
-      const response = await fetch("/api/organizations/check-slug", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug: slugToCheck }),
-      });
-      const data = await response.json();
+      const data = await appClient.organizations.checkSlug(slugToCheck);
+
+      if ("error" in data) {
+        setIsSlugAvailable(false);
+        setError(data.error || "Failed to check slug availability.");
+        return;
+      }
 
       if (data.available) {
         setIsSlugAvailable(true);
@@ -148,15 +150,14 @@ function Onboarding() {
       }
 
       if (data) {
-        await fetch(`/api/${data.slug}/auth-tokens`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: "Default Token",
-          }),
+        const tokenRes = await appClient.authTokens.create({
+          name: "Default Token",
+          orgSlug: data.slug,
         });
+
+        if ("error" in tokenRes) {
+          console.error(tokenRes.error);
+        }
 
         await authClient.organization.setActive({
           organizationId: data.id,

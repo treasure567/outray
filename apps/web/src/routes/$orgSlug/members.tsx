@@ -13,7 +13,7 @@ import { useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getPlanLimits } from "@/lib/subscription-plans";
-import axios from "axios";
+import { appClient } from "@/lib/app-client";
 import { AlertModal } from "@/components/alert-modal";
 import { LimitModal } from "@/components/limit-modal";
 import { ConfirmModal } from "@/components/confirm-modal";
@@ -111,8 +111,9 @@ function MembersView() {
       queryKey: ["subscription", orgSlug],
       queryFn: async () => {
         if (!orgSlug) return null;
-        const response = await axios.get(`/api/${orgSlug}/subscriptions`);
-        return response.data;
+        const response = await appClient.subscriptions.get(orgSlug);
+        if ("error" in response) throw new Error(response.error);
+        return response;
       },
       enabled: !!selectedOrganizationId,
     },

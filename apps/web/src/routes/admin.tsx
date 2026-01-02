@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Activity } from "lucide-react";
+import { appClient } from "@/lib/app-client";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -33,27 +34,22 @@ function AdminPage() {
       }
       setLoading(true);
       try {
-        const res = await fetch(`/api/admin/stats?period=${period}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (res.status === 401 || res.status === 403) {
-          setToken(null);
-          setAuthError("Unauthorized. Please log in again.");
-          setLoading(false);
-          return;
+        const json = await appClient.admin.stats(period, token);
+        if ("error" in json) {
+          setAuthError(json.error);
+          setData([]);
+          if (json.error.toLowerCase().includes("unauthorized")) {
+            setToken(null);
+          }
+        } else {
+          setData(
+            json.map((d: any) => ({
+              ...d,
+              // Treat as local wall-clock (server wrote local time); avoid adding Z which shifts by timezone
+              time: new Date(d.time.replace(" ", "T")).getTime(),
+            })),
+          );
         }
-
-        const json = await res.json();
-        setData(
-          json.map((d: any) => ({
-            ...d,
-            // Treat as local wall-clock (server wrote local time); avoid adding Z which shifts by timezone
-            time: new Date(d.time.replace(" ", "T")).getTime(),
-          })),
-        );
       } catch (error) {
         console.error("Failed to fetch stats:", error);
       } finally {
@@ -69,19 +65,14 @@ function AdminPage() {
   const handleLogin = async () => {
     setAuthError(null);
     try {
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phrase }),
-      });
+      const res = await appClient.admin.login(phrase);
 
-      if (!res.ok) {
+      if ("error" in res) {
         setAuthError("Invalid phrase");
         return;
       }
 
-      const json = await res.json();
-      setToken(json.token);
+      setToken(res.token);
       setPhrase("");
     } catch (e) {
       setAuthError("Login failed");

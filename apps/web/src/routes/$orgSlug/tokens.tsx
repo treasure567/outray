@@ -2,12 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Key, Plus, Trash2 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { CreateTokenModal } from "@/components/create-token-modal";
 import { ConfirmModal } from "@/components/confirm-modal";
+import { appClient } from "@/lib/app-client";
 
 export const Route = createFileRoute("/$orgSlug/tokens")({
   component: TokensSettingsView,
@@ -32,17 +32,26 @@ function TokensSettingsView() {
     queryKey: ["auth-tokens", orgSlug],
     queryFn: async () => {
       if (!orgSlug) return [];
-      const response = await axios.get(`/api/${orgSlug}/auth-tokens`);
-      return response.data.tokens as AuthToken[];
+      const response = await appClient.authTokens.list(orgSlug);
+      if ("error" in response) {
+        throw new Error(response.error);
+      }
+      return response.tokens.map((token) => ({
+        ...token,
+        createdAt: token.createdAt.toString(),
+        lastUsedAt: token.lastUsedAt ? token.lastUsedAt.toString() : null,
+      })) as AuthToken[];
     },
     enabled: !!orgSlug,
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      await axios.delete(`/api/${orgSlug}/auth-tokens`, {
-        data: { id },
-      });
+      if (!orgSlug) throw new Error("No active organization");
+      const response = await appClient.authTokens.delete({ id, orgSlug });
+      if ("error" in response) {
+        throw new Error(response.error);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

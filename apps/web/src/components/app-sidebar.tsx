@@ -21,7 +21,6 @@ import { OrganizationDropdown } from "./sidebar/organization-dropdown";
 import { PlanUsage } from "./sidebar/plan-usage";
 import { UserSection } from "./sidebar/user-section";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { getPlanLimits } from "@/lib/subscription-plans";
 
 interface SidebarProps {
@@ -54,8 +53,9 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
     queryKey: ["subscription", orgSlug],
     queryFn: async () => {
       if (!orgSlug) return null;
-      const response = await axios.get(`/api/${orgSlug}/subscriptions`);
-      return response.data;
+      const response = await appClient.subscriptions.get(orgSlug);
+      if ("error" in response) throw new Error(response.error);
+      return response;
     },
     enabled: !!orgSlug,
   });

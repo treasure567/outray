@@ -75,11 +75,12 @@ function TunnelDetailView() {
     {
       queryKey: ["protocolStats", orgSlug, tunnelId, timeRange],
       queryFn: async () => {
-        const response = await fetch(
-          `/api/${orgSlug}/stats/protocol?tunnelId=${tunnelId}&range=${timeRange}`,
-        );
-        if (!response.ok) throw new Error("Failed to fetch protocol stats");
-        return response.json();
+        const response = await appClient.stats.protocol(orgSlug!, {
+          tunnelId,
+          range: timeRange,
+        });
+        if ("error" in response) throw new Error(response.error);
+        return response;
       },
       refetchInterval: 5000,
       enabled: isProtocolTunnel,
@@ -178,6 +179,7 @@ function TunnelDetailView() {
         <ProtocolEvents
           tunnelId={tunnelId}
           protocol={tunnel.protocol as "tcp" | "udp"}
+          orgSlug={orgSlug}
         />
       )}
 

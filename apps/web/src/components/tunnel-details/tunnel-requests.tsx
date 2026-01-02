@@ -2,6 +2,7 @@ import { Search, MoreVertical, Radio } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useAppStore } from "@/lib/store";
 import { useParams } from "@tanstack/react-router";
+import { appClient } from "@/lib/app-client";
 
 function formatBytes(bytes: number): string {
   if (bytes >= 1_073_741_824) {
@@ -60,13 +61,14 @@ export function TunnelRequests({ tunnelId }: TunnelRequestsProps) {
 
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `/api/${orgSlug}/requests?tunnelId=${tunnelId}&range=${range}&limit=100&search=${encodeURIComponent(searchTerm)}`,
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setRequests(data.requests || []);
-      }
+      const response = await appClient.requests.list(orgSlug, {
+        tunnelId,
+        range,
+        limit: 100,
+        search: searchTerm,
+      });
+      if ("error" in response) throw new Error(response.error);
+      setRequests(response.requests || []);
     } catch (error) {
       console.error("Failed to fetch historical requests:", error);
     } finally {

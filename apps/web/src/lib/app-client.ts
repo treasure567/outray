@@ -47,6 +47,17 @@ export interface Domain {
   updatedAt: Date;
 }
 
+export interface Subscription {
+  plan: string;
+  usage?: {
+    tunnels?: number;
+    domains?: number;
+    subdomains?: number;
+    members?: number;
+  };
+  [key: string]: any;
+}
+
 interface CreateAuthTokenParams {
   name: string;
   orgSlug: string;
@@ -70,7 +81,7 @@ type ApiResponse<T> = SuccessResponse<T> | ErrorResponse;
 async function apiCall<T = any>(
   method: "get" | "post" | "patch" | "delete",
   url: string,
-  options?: { params?: any; data?: any },
+  options?: { params?: any; data?: any; headers?: Record<string, string> },
 ): Promise<ApiResponse<T>> {
   try {
     let response;
@@ -78,10 +89,12 @@ async function apiCall<T = any>(
       response = await apiClient[method](url, {
         params: options?.params,
         data: options?.data,
+        headers: options?.headers,
       });
     } else {
       response = await apiClient[method](url, options?.data, {
         params: options?.params,
+        headers: options?.headers,
       });
     }
     return response.data;
@@ -94,6 +107,35 @@ async function apiCall<T = any>(
 }
 
 export const appClient = {
+  admin: {
+    stats: async (period: string, token: string) =>
+      apiCall<any[]>("get", `/api/admin/stats`, {
+        params: { period },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
+
+    login: async (phrase: string) =>
+      apiCall<{ token: string }>("post", `/api/admin/login`, {
+        data: { phrase },
+      }),
+  },
+
+  cli: {
+    complete: async (code: string) =>
+      apiCall<{ success?: boolean }>("post", `/api/cli/complete`, {
+        data: { code },
+      }),
+  },
+
+  organizations: {
+    checkSlug: async (slug: string) =>
+      apiCall<{ available: boolean }>("post", `/api/organizations/check-slug`, {
+        data: { slug },
+      }),
+  },
+
   tunnels: {
     list: async (orgSlug: string) =>
       apiCall<{ tunnels: Tunnel[] }>("get", `/api/${orgSlug}/tunnels`),
@@ -207,5 +249,38 @@ export const appClient = {
         limit: number;
         percentage: number;
       }>("get", `/api/${orgSlug}/stats/bandwidth`),
+
+    protocol: async (
+      orgSlug: string,
+      params: { tunnelId: string; range: string },
+    ) =>
+      apiCall<{ stats: any; chartData: any; recentEvents: any[] }>(
+        "get",
+        `/api/${orgSlug}/stats/protocol`,
+        { params },
+      ),
+  },
+
+  requests: {
+    list: async (
+      orgSlug: string,
+      params: {
+        tunnelId?: string;
+        range: string;
+        limit?: number;
+        search?: string;
+      },
+    ) =>
+      apiCall<{ requests: any[] }>("get", `/api/${orgSlug}/requests`, {
+        params,
+      }),
+  },
+
+  subscriptions: {
+    get: async (orgSlug: string) =>
+      apiCall<{ subscription: Subscription; usage?: Subscription["usage"] }>(
+        "get",
+        `/api/${orgSlug}/subscriptions`,
+      ),
   },
 };

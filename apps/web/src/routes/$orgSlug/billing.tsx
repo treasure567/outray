@@ -8,10 +8,10 @@ import {
   calculatePlanCost,
 } from "@/lib/subscription-plans";
 import { initiateCheckout, POLAR_PRODUCT_IDS } from "@/lib/polar";
-import axios from "axios";
 import { authClient, usePermission } from "@/lib/auth-client";
 import { useState } from "react";
 import { AlertModal } from "@/components/alert-modal";
+import { appClient } from "@/lib/app-client";
 
 export const Route = createFileRoute("/$orgSlug/billing")({
   component: BillingView,
@@ -58,8 +58,10 @@ function BillingView() {
   const { data, isLoading } = useQuery({
     queryKey: ["subscription", orgSlug],
     queryFn: async () => {
-      const response = await axios.get(`/api/${orgSlug}/subscriptions`);
-      return response.data;
+      if (!orgSlug) return null;
+      const response = await appClient.subscriptions.get(orgSlug);
+      if ("error" in response) throw new Error(response.error);
+      return response;
     },
     enabled: !!selectedOrganizationId && !!canManageBilling && !!orgSlug,
   });

@@ -3,9 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Globe, Plus } from "lucide-react";
 import { appClient } from "@/lib/app-client";
-import { useAppStore } from "@/lib/store";
 import { getPlanLimits } from "@/lib/subscription-plans";
-import axios from "axios";
 import { DomainHeader } from "@/components/domains/domain-header";
 import { DomainLimitWarning } from "@/components/domains/domain-limit-warning";
 import { CreateDomainModal } from "@/components/domains/create-domain-modal";
@@ -19,7 +17,6 @@ export const Route = createFileRoute("/$orgSlug/domains")({
 
 function DomainsView() {
   const { orgSlug } = Route.useParams();
-  const { selectedOrganization } = useAppStore();
   const queryClient = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
   const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
@@ -41,8 +38,9 @@ function DomainsView() {
       queryKey: ["subscription", orgSlug],
       queryFn: async () => {
         if (!orgSlug) return null;
-        const response = await axios.get(`/api/${orgSlug}/subscriptions`);
-        return response.data;
+        const response = await appClient.subscriptions.get(orgSlug);
+        if ("error" in response) throw new Error(response.error);
+        return response;
       },
       enabled: !!orgSlug,
     },

@@ -1,6 +1,7 @@
 import { Search, Zap } from "lucide-react";
 import { useState } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { appClient } from "@/lib/app-client";
 
 function formatBytes(bytes: number): string {
   if (bytes >= 1_073_741_824) {
@@ -36,6 +37,7 @@ interface ProtocolEvent {
 interface ProtocolEventsProps {
   tunnelId: string;
   protocol: "tcp" | "udp";
+  orgSlug: string;
 }
 
 type TimeRange = "1h" | "24h" | "7d" | "30d";
@@ -47,7 +49,11 @@ const TIME_RANGES = [
   { value: "30d" as TimeRange, label: "30d" },
 ];
 
-export function ProtocolEvents({ tunnelId, protocol }: ProtocolEventsProps) {
+export function ProtocolEvents({
+  tunnelId,
+  protocol,
+  orgSlug,
+}: ProtocolEventsProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [timeRange, setTimeRange] = useState<TimeRange>("24h");
 
@@ -57,17 +63,18 @@ export function ProtocolEvents({ tunnelId, protocol }: ProtocolEventsProps) {
   const { data, isLoading, isPlaceholderData } = useQuery({
     queryKey: ["protocolEvents", tunnelId, timeRange],
     queryFn: async () => {
-      const response = await fetch(
-        `/api/stats/protocol?tunnelId=${tunnelId}&range=${timeRange}`,
-      );
-      if (!response.ok) throw new Error("Failed to fetch protocol events");
-      return response.json();
+      const response = await appClient.stats.protocol(orgSlug, {
+        tunnelId,
+        range: timeRange,
+      });
+      if ("error" in response) throw new Error(response.error);
+      return response;
     },
     refetchInterval: 5000,
     placeholderData: keepPreviousData,
   });
 
-  const events: ProtocolEvent[] = data?.recentEvents || [];
+  const events: ProtocolEvent[] = (data as any)?.recentEvents || [];
 
   const filteredEvents = events.filter((event) => {
     if (!searchTerm) return true;

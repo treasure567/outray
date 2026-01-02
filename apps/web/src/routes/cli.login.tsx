@@ -6,6 +6,7 @@ import {
 import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Loader2, CheckCircle, XCircle, Terminal } from "lucide-react";
+import { appClient } from "@/lib/app-client";
 
 export const Route = createFileRoute("/cli/login")({
   component: CLILogin,
@@ -61,15 +62,11 @@ function CLILogin() {
     setStatus("loading");
 
     try {
-      await fetch("/api/cli/complete", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          code,
-        }),
-      });
+      const res = await appClient.cli.complete(code);
+
+      if ("error" in res) {
+        throw new Error(res.error);
+      }
 
       setStatus("success");
       setMessage("You may close this tab and return to your terminal.");

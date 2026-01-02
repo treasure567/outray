@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import axios from "axios";
 import { appClient } from "@/lib/app-client";
 import { getPlanLimits } from "@/lib/subscription-plans";
 import { BandwidthUsage } from "@/components/overview/bandwidth-usage";
@@ -27,8 +26,9 @@ function OverviewView() {
     queryKey: ["subscription", orgSlug],
     queryFn: async () => {
       if (!orgSlug) return null;
-      const response = await axios.get(`/api/${orgSlug}/subscriptions`);
-      return response.data;
+      const response = await appClient.subscriptions.get(orgSlug);
+      if ("error" in response) throw new Error(response.error);
+      return response;
     },
     enabled: !!orgSlug,
   });

@@ -2,8 +2,8 @@ import { X, Key, Copy, Check, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { useParams } from "@tanstack/react-router";
+import { appClient } from "@/lib/app-client";
 
 interface CreateTokenModalProps {
   isOpen: boolean;
@@ -19,13 +19,16 @@ export function CreateTokenModal({ isOpen, onClose }: CreateTokenModalProps) {
 
   const createMutation = useMutation({
     mutationFn: async (name: string) => {
-      const response = await axios.post<{
-        token: string;
-      }>(`/api/${orgSlug}/auth-tokens`, {
+      const response = await appClient.authTokens.create({
         name,
+        orgSlug,
       });
 
-      return response.data.token;
+      if ("error" in response) {
+        throw new Error(response.error);
+      }
+
+      return response.token.token;
     },
     onSuccess: (token) => {
       if (token) {
