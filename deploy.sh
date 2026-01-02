@@ -24,7 +24,17 @@ if [ -n "$TIGER_DATA_URL" ]; then
   # Install psql if not available
   if ! command -v psql &> /dev/null; then
     echo "📦 Installing PostgreSQL client..."
-    apt-get update -qq && apt-get install -y -qq postgresql-client > /dev/null
+    # Temporarily disable problematic repos and install postgresql-client
+    apt-get update -qq --allow-releaseinfo-change 2>/dev/null || true
+    apt-get install -y -qq postgresql-client 2>/dev/null || {
+      # Fallback: use official PostgreSQL repo
+      echo "📦 Adding PostgreSQL apt repository..."
+      apt-get install -y -qq curl ca-certificates gnupg 2>/dev/null || true
+      curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg 2>/dev/null
+      echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+      apt-get update -qq 2>/dev/null
+      apt-get install -y -qq postgresql-client 2>/dev/null
+    }
   fi
   psql "$TIGER_DATA_URL" -f deploy/setup_tigerdata.sql
   echo "✅ Tiger Data migrations complete."
