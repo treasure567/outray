@@ -1,4 +1,4 @@
 {
   "title": "Reference",
-  "pages": ["cli-reference", "architecture"]
+  "pages": ["protocols", "cli-reference", "architecture"]
 }
