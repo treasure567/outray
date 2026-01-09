@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { authClient } from "@/lib/auth-client";
 import { appClient } from "@/lib/app-client";
@@ -19,35 +19,16 @@ function Onboarding() {
   const [slug, setSlug] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(true);
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [isSlugAvailable, setIsSlugAvailable] = useState<boolean | null>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const session = await authClient.getSession();
-        const { data: organizations } = await authClient.organization.list();
-        if (!session.data) {
-          navigate({ to: "/login" });
-          return;
-        }
-        if (session.data.session.activeOrganizationId) {
-          navigate({
-            to: "/$orgSlug",
-            params: { orgSlug: organizations?.[0].slug! },
-          });
-          return;
-        }
-      } catch (error) {
-        console.error("Failed to check session:", error);
-      } finally {
-        setCheckingSession(false);
-      }
-    };
-    checkSession();
-  }, [navigate]);
+  const { data: sessionData, isPending: sessionPending } =
+    authClient.useSession();
+
+  if (!sessionPending && !sessionData?.session.id) {
+    return <Navigate to="/login" />;
+  }
 
   const validateSlug = (value: string) => {
     if (!/^[a-z0-9-]+$/.test(value)) {
@@ -172,7 +153,7 @@ function Onboarding() {
     }
   };
 
-  if (checkingSession) {
+  if (sessionPending) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black text-white">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />

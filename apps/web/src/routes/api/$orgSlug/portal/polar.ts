@@ -52,7 +52,7 @@ export const Route = createFileRoute("/api/$orgSlug/portal/polar")({
 
           return subscription.polarCustomerId;
         },
-        returnUrl: process.env.APP_URL + "/dash/billing",
+        returnUrl: process.env.APP_URL + "/select/billing",
         server:
           process.env.POLAR_SERVER === "sandbox" ? "sandbox" : "production",
       }),

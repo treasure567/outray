@@ -25,7 +25,7 @@ function RouteComponent() {
     setLoading(provider);
     await authClient.signIn.social({
       provider,
-      callbackURL: redirect || "/dash",
+      callbackURL: redirect || "/select",
       newUserCallbackURL: redirect || "/onboarding",
     });
     setLoading(null);

@@ -6,8 +6,8 @@ export const Route = createFileRoute("/api/checkout/polar")({
     handlers: {
       GET: Checkout({
         accessToken: process.env.POLAR_ACCESS_TOKEN!,
-        successUrl: process.env.APP_URL + "/dash/billing?success=true",
-        returnUrl: process.env.APP_URL + "/dash/billing",
+        successUrl: process.env.APP_URL + "/select/billing?success=true",
+        returnUrl: process.env.APP_URL + "/select/billing",
         server:
           process.env.POLAR_SERVER === "sandbox" ? "sandbox" : "production",
         theme: "dark",
