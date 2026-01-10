@@ -18,10 +18,7 @@ export const Hero = () => {
 
   return (
     <div className="relative min-h-screen flex flex-col justify-center items-center overflow-hidden pt-20">
-      <div
-        className="absolute inset-0 z-0"
-        style={{ transform: "translateX(-10%)" }}
-      >
+      <div className="absolute inset-0 z-0 md:-translate-x-[10%]">
         <Canvas camera={{ position: [0, 0, 15], fov: 45 }}>
           <color attach="background" args={["#000000"]} />
           <BeamGroup />
