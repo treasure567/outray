@@ -1,4 +1,4 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useParams } from "@tanstack/react-router";
 import { useRef, useEffect } from "react";
 import { ChevronRight, Check, Plus } from "lucide-react";
 
@@ -10,25 +10,25 @@ interface Organization {
 
 interface OrganizationDropdownProps {
   organizations: any[];
-  selectedOrganization: Organization | null;
   setSelectedOrganization: (org: Organization | null) => void;
   isOrgDropdownOpen: boolean;
   setIsOrgDropdownOpen: (open: boolean) => void;
   isCollapsed: boolean;
-  selectedOrg: any;
 }
 
 export function OrganizationDropdown({
   organizations,
-  selectedOrganization,
   setSelectedOrganization,
   isOrgDropdownOpen,
   setIsOrgDropdownOpen,
   isCollapsed,
-  selectedOrg,
 }: OrganizationDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+  const { orgSlug } = useParams({ from: "/$orgSlug" });
+
+  const selectedOrg =
+    organizations?.find((org) => org.slug === orgSlug) || organizations?.[0];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -87,13 +87,13 @@ export function OrganizationDropdown({
                   setIsOrgDropdownOpen(false);
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
-                  selectedOrganization?.id === org.id
+                  selectedOrg?.id === org.id
                     ? "bg-accent/10 text-accent"
                     : "text-gray-400 hover:text-white hover:bg-white/5"
                 }`}
               >
                 <span className="truncate">{org.name}</span>
-                {selectedOrganization?.id === org.id && <Check size={14} />}
+                {selectedOrg?.id === org.id && <Check size={14} />}
               </Link>
             ))}
           </div>
